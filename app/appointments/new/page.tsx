@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Send } from 'lucide-react'
 import { format } from 'date-fns'
@@ -9,7 +9,7 @@ import { supabase, type Patient } from '@/lib/supabase'
 const TYPES = ['Consulta', 'Retorno', 'Exame', 'Procedimento', 'Urgência']
 const DURATIONS = [15, 30, 45, 60, 90]
 
-export default function NewAppointmentPage() {
+function NewAppointmentForm() {
   const router = useRouter()
   const params = useSearchParams()
   const [patients, setPatients] = useState<Patient[]>([])
@@ -49,7 +49,6 @@ export default function NewAppointmentPage() {
       .single()
 
     if (!error && data && sendReminder) {
-      // Send WhatsApp reminder
       await fetch('/api/appointments/remind', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -71,7 +70,6 @@ export default function NewAppointmentPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="px-4 mt-5 space-y-4">
-        {/* Patient */}
         <div>
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Paciente *</label>
           <select className="input mt-1" value={form.patient_id} onChange={e => set('patient_id', e.target.value)} required>
@@ -82,7 +80,6 @@ export default function NewAppointmentPage() {
           </select>
         </div>
 
-        {/* Date + Time */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Data *</label>
@@ -94,7 +91,6 @@ export default function NewAppointmentPage() {
           </div>
         </div>
 
-        {/* Duration */}
         <div>
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Duração</label>
           <div className="flex gap-2 mt-1 flex-wrap">
@@ -115,7 +111,6 @@ export default function NewAppointmentPage() {
           </div>
         </div>
 
-        {/* Type */}
         <div>
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipo</label>
           <div className="flex gap-2 mt-1 flex-wrap">
@@ -136,13 +131,11 @@ export default function NewAppointmentPage() {
           </div>
         </div>
 
-        {/* Notes */}
         <div>
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Observações</label>
           <textarea className="input mt-1 resize-none" rows={2} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Motivo da consulta, observações..." />
         </div>
 
-        {/* Send reminder toggle */}
         <div className="flex items-center gap-3 py-3 border-t border-gray-100">
           <input
             id="reminder"
@@ -162,5 +155,13 @@ export default function NewAppointmentPage() {
         </button>
       </form>
     </div>
+  )
+}
+
+export default function NewAppointmentPage() {
+  return (
+    <Suspense fallback={<div className="page-container p-8 text-center text-gray-400">Carregando...</div>}>
+      <NewAppointmentForm />
+    </Suspense>
   )
 }
