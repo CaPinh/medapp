@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Mobile-first scrollable page */
+.page-container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: white;
+  position: relative;
+  box-shadow: 0 0 40px rgba(0,0,0,0.08);
+}
+
+/* Card styles */
+.card {
+  @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-4;
+}
+
+/* Status badges */
+.badge-scheduled  { @apply bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full; }
+.badge-confirmed  { @apply bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full; }
+.badge-cancelled  { @apply bg-red-100 text-red-700 text-xs font-semibold px-2 py-0.5 rounded-full; }
+.badge-completed  { @apply bg-gray-100 text-gray-600 text-xs font-semibold px-2 py-0.5 rounded-full; }
+
+/* Input */
+.input {
+  @apply w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50;
+}
+
+.btn-primary {
+  @apply bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl px-4 py-2.5 text-sm transition-colors w-full;
+}
+
+.btn-ghost {
+  @apply border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium rounded-xl px-4 py-2.5 text-sm transition-colors;
+}
