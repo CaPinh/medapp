@@ -26,9 +26,11 @@ export default function NewAppointmentPage() {
   })
 
   useEffect(() => {
-    supabase.from('patients').select("*").order('name').then(({ data }) => {
-      setPatients(data || [])
-    })
+    async function load() {
+      const { data } = await supabase.from('patients').select().order('name')
+      setPatients((data as Patient[]) || [])
+    }
+    load()
   }, [])
 
   function set(field: string, value: string | number) {
