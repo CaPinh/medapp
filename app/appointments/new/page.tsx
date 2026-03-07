@@ -26,7 +26,7 @@ export default function NewAppointmentPage() {
   })
 
   useEffect(() => {
-    supabase.from('patients').select('id,name,phone').order('name').then(({ data }) => {
+    supabase.from('patients').select(*).order('name').then(({ data }) => {
       setPatients(data || [])
     })
   }, [])
