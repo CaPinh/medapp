@@ -22,7 +22,7 @@ export default function BottomNav({ active }: { active: Tab }) {
                 <Link
                   key="fab"
                   href="/appointments/new"
-                  className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 bg-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-200 hover:bg-green-700 transition-colors"
+                  className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-200 hover:bg-purple-700 transition-colors"
                 >
                   <Plus size={24} className="text-white" />
                 </Link>
@@ -31,7 +31,7 @@ export default function BottomNav({ active }: { active: Tab }) {
                 key={href}
                 href={href}
                 className={`flex flex-col items-center gap-0.5 px-5 py-1 rounded-xl transition-colors ${
-                  isActive ? 'text-green-600' : 'text-gray-400 hover:text-gray-600'
+                  isActive ? 'text-purple-600' : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
                 <Icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
