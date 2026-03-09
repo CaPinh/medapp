@@ -3,135 +3,141 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Phone, Mail, Calendar, Edit2, MessageCircle, Trash2 } from 'lucide-react'
+import { ArrowLeft, MessageCircle, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { supabase, type Patient, type Appointment } from '@/lib/supabase'
+import { supabase, type Appointment } from '@/lib/supabase'
 import StatusBadge from '@/components/StatusBadge'
 
-export default function PatientDetailPage() {
+const STATUS_ACTIONS = [
+  { value: 'scheduled',  label: 'Agendado',   icon: Clock,        color: 'text-blue-600 bg-blue-50' },
+  { value: 'confirmed',  label: 'Confirmado',  icon: CheckCircle,  color: 'text-purple-600 bg-purple-50' },
+  { value: 'completed',  label: 'Realizado',   icon: CheckCircle,  color: 'text-gray-600 bg-gray-50' },
+  { value: 'cancelled',  label: 'Cancelado',   icon: XCircle,      color: 'text-red-600 bg-red-50' },
+]
+
+export default function AppointmentDetailPage() {
   const router = useRouter()
   const { id } = useParams<{ id: string }>()
-  const [patient, setPatient] = useState<Patient | null>(null)
-  const [appointments, setAppointments] = useState<Appointment[]>([])
-  const [loading, setLoading] = useState(true)
+  const [appt, setAppt] = useState<Appointment | null>(null)
+  const [sending, setSending] = useState(false)
 
-  useEffect(() => {
-    fetchPatient()
-    fetchHistory()
-  }, [id])
+  useEffect(() => { fetchAppt() }, [id])
 
-  async function fetchPatient() {
-    const { data } = await supabase.from('patients').select('*').eq('id', id).single()
-    setPatient(data)
-    setLoading(false)
-  }
-
-  async function fetchHistory() {
+  async function fetchAppt() {
     const { data } = await supabase
       .from('appointments')
-      .select('*')
-      .eq('patient_id', id)
-      .order('date', { ascending: false })
-    setAppointments(data || [])
+      .select('*, patient:patients(*)')
+      .eq('id', id)
+      .single()
+    setAppt(data)
   }
 
-  async function deletePatient() {
-    if (!confirm('Excluir este paciente e todas as consultas?')) return
-    await supabase.from('patients').delete().eq('id', id)
-    router.push('/patients')
+  async function updateStatus(status: Appointment['status']) {
+    await supabase.from('appointments').update({ status }).eq('id', id)
+    fetchAppt()
   }
 
-  if (loading) return <div className="page-container p-8 text-center text-gray-400">Carregando...</div>
-  if (!patient) return <div className="page-container p-8 text-center text-gray-400">Paciente não encontrado</div>
+  async function deleteAppt() {
+    if (!confirm('Excluir este agendamento?')) return
+    await supabase.from('appointments').delete().eq('id', id)
+    router.push('/')
+  }
 
-  const initials = patient.name.split(' ').map(n => n[0]).slice(0, 2).join('')
-  const whatsappLink = `https://wa.me/55${patient.phone.replace(/\D/g, '')}`
+  async function sendReminder() {
+    setSending(true)
+    await fetch('/api/appointments/remind', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appointment_id: id }),
+    })
+    setSending(false)
+    alert('Lembrete enviado via WhatsApp!')
+  }
+
+  if (!appt) return <div className="page-container p-8 text-center text-gray-400">Carregando...</div>
+
+  const dateLabel = format(new Date(appt.date + 'T12:00:00'), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })
 
   return (
     <div className="page-container pb-8">
-      {/* Header */}
-      <div className="bg-green-600 px-4 pt-12 pb-6">
+      <div className="bg-purple-600 px-4 pt-12 pb-6">
         <div className="flex items-center justify-between">
           <button onClick={() => router.back()} className="text-white/80 hover:text-white">
             <ArrowLeft size={22} />
           </button>
-          <div className="flex gap-2">
-            <Link href={`/patients/${id}/edit`} className="p-2 rounded-xl bg-white/15 text-white">
-              <Edit2 size={16} />
-            </Link>
-            <button onClick={deletePatient} className="p-2 rounded-xl bg-white/15 text-white">
-              <Trash2 size={16} />
-            </button>
-          </div>
+          <button onClick={deleteAppt} className="p-2 rounded-xl bg-white/15 text-white">
+            <Trash2 size={16} />
+          </button>
         </div>
-        <div className="flex items-center gap-3 mt-4">
-          <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
-            <span className="text-white font-bold text-xl">{initials}</span>
-          </div>
-          <div>
-            <h1 className="text-white text-xl font-bold">{patient.name}</h1>
-            {patient.birth_date && (
-              <p className="text-green-100 text-sm">
-                Nasc: {format(new Date(patient.birth_date + 'T12:00:00'), 'dd/MM/yyyy')}
-              </p>
-            )}
-          </div>
-        </div>
+        <h1 className="text-white text-xl font-bold mt-4 capitalize">{dateLabel}</h1>
+        <p className="text-purple-100 text-sm mt-0.5">{appt.time.slice(0, 5)} · {appt.duration_min} min · {appt.type}</p>
       </div>
 
-      {/* Contact */}
-      <div className="px-4 mt-4 space-y-2">
-        <a href={`tel:${patient.phone}`} className="card flex items-center gap-3 hover:bg-gray-50">
-          <Phone size={18} className="text-green-600" />
-          <span className="text-gray-700 text-sm">{patient.phone}</span>
-        </a>
-        <a href={whatsappLink} target="_blank" rel="noreferrer" className="card flex items-center gap-3 hover:bg-gray-50">
-          <MessageCircle size={18} className="text-green-500" />
-          <span className="text-gray-700 text-sm">Abrir WhatsApp</span>
-        </a>
-        {patient.email && (
-          <a href={`mailto:${patient.email}`} className="card flex items-center gap-3 hover:bg-gray-50">
-            <Mail size={18} className="text-blue-500" />
-            <span className="text-gray-700 text-sm">{patient.email}</span>
-          </a>
-        )}
-        {patient.notes && (
+      <div className="px-4 mt-4 space-y-3">
+        {/* Patient card */}
+        <Link href={`/patients/${appt.patient_id}`}>
+          <div className="card flex items-center gap-3 hover:bg-gray-50">
+            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+              <span className="text-purple-700 font-bold text-sm">
+                {appt.patient?.name.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
+              </span>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-800 text-sm">{appt.patient?.name}</p>
+              <p className="text-gray-500 text-xs">{appt.patient?.phone}</p>
+            </div>
+          </div>
+        </Link>
+
+        {/* Status */}
+        <div className="card">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Status</p>
+          <div className="grid grid-cols-2 gap-2">
+            {STATUS_ACTIONS.map(({ value, label, icon: Icon, color }) => (
+              <button
+                key={value}
+                onClick={() => updateStatus(value as Appointment['status'])}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all border-2 ${
+                  appt.status === value
+                    ? `${color} border-current`
+                    : 'border-transparent bg-gray-50 text-gray-500 hover:bg-gray-100'
+                }`}
+              >
+                <Icon size={15} />
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Notes */}
+        {appt.notes && (
           <div className="card">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Observações</p>
-            <p className="text-gray-700 text-sm">{patient.notes}</p>
+            <p className="text-gray-700 text-sm">{appt.notes}</p>
           </div>
         )}
-      </div>
 
-      {/* Schedule button */}
-      <div className="px-4 mt-4">
-        <Link href={`/appointments/new?patient_id=${id}`} className="btn-primary flex items-center justify-center gap-2">
-          <Calendar size={16} /> Agendar Consulta
-        </Link>
-      </div>
+        {/* Send WhatsApp reminder */}
+        <button
+          onClick={sendReminder}
+          disabled={sending}
+          className="card flex items-center gap-3 w-full text-left hover:bg-gray-50 transition-colors"
+        >
+          <div className="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center">
+            <MessageCircle size={18} className="text-purple-600" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-gray-800">
+              {sending ? 'Enviando...' : 'Enviar lembrete WhatsApp'}
+            </p>
+            <p className="text-xs text-gray-500">Notificar paciente sobre esta consulta</p>
+          </div>
+        </button>
 
-      {/* History */}
-      <div className="px-4 mt-6">
-        <h2 className="text-gray-800 font-semibold text-sm mb-3">Histórico de Consultas</h2>
-        {appointments.length === 0 && (
-          <p className="text-gray-400 text-sm text-center py-6">Nenhuma consulta registrada</p>
-        )}
-        <div className="space-y-2">
-          {appointments.map(appt => (
-            <Link key={appt.id} href={`/appointments/${appt.id}`}>
-              <div className="card flex items-center gap-3 hover:bg-gray-50">
-                <div className="text-center min-w-[48px]">
-                  <p className="text-xs font-bold text-gray-700">{format(new Date(appt.date + 'T12:00:00'), 'dd/MM', { locale: ptBR })}</p>
-                  <p className="text-xs text-gray-400">{appt.time.slice(0, 5)}</p>
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700">{appt.type}</p>
-                  <StatusBadge status={appt.status} />
-                </div>
-              </div>
-            </Link>
-          ))}
+        <div className="text-xs text-gray-400 text-center pt-2">
+          Lembrete {appt.reminder_sent ? 'enviado ✓' : 'não enviado'} · Agendado em {format(new Date(appt.created_at), 'dd/MM/yyyy HH:mm')}
         </div>
       </div>
     </div>
