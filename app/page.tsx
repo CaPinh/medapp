@@ -48,8 +48,8 @@ export default function Home() {
 
   return (
     <div className="page-container pb-24">
-      <div className="bg-green-600 px-4 pt-12 pb-6">
-        <p className="text-green-100 text-sm capitalize">{todayLabel}</p>
+      <div className="bg-purple-600 px-4 pt-12 pb-6">
+        <p className="text-purple-100 text-sm capitalize">{todayLabel}</p>
         <h1 className="text-white text-2xl font-bold mt-1">Agenda de Hoje</h1>
         <div className="grid grid-cols-3 gap-2 mt-4">
           {[
@@ -60,7 +60,7 @@ export default function Home() {
             <div key={label} className="bg-white/15 rounded-2xl p-3 text-center">
               <Icon size={16} className="text-white/80 mx-auto mb-1" />
               <p className="text-white text-xl font-bold">{value}</p>
-              <p className="text-green-100 text-xs">{label}</p>
+              <p className="text-purple-100 text-xs">{label}</p>
             </div>
           ))}
         </div>
@@ -96,7 +96,7 @@ export default function Home() {
           <div className="text-center py-12 text-gray-400">
             <Calendar size={40} className="mx-auto mb-2 opacity-40" />
             <p className="text-sm">Nenhuma consulta para hoje</p>
-            <Link href="/appointments/new" className="text-green-600 text-sm font-medium mt-2 block">
+            <Link href="/appointments/new" className="text-purple-600 text-sm font-medium mt-2 block">
               + Agendar consulta
             </Link>
           </div>
@@ -106,7 +106,7 @@ export default function Home() {
           {appointments.map(appt => (
             <div key={appt.id} className="card flex items-start gap-3">
               <div className="text-center min-w-[44px]">
-                <p className="text-green-600 font-bold text-base">{appt.time.slice(0, 5)}</p>
+                <p className="text-purple-600 font-bold text-base">{appt.time.slice(0, 5)}</p>
                 <p className="text-gray-400 text-xs">{appt.duration_min}min</p>
               </div>
               <div className="flex-1 min-w-0">
@@ -120,7 +120,7 @@ export default function Home() {
                 {appt.status === 'scheduled' && (
                   <button
                     onClick={() => updateStatus(appt.id, 'confirmed')}
-                    className="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100"
+                    className="p-1.5 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100"
                   >
                     <CheckCircle size={16} />
                   </button>
