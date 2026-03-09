@@ -97,7 +97,7 @@ function NewAppointmentForm() {
 
   return (
     <div className="page-container pb-8">
-      <div className="bg-green-600 px-4 pt-12 pb-5 flex items-center gap-3">
+      <div className="bg-purple-600 px-4 pt-12 pb-5 flex items-center gap-3">
         <button onClick={() => router.back()} className="text-white/80 hover:text-white">
           <ArrowLeft size={22} />
         </button>
@@ -140,8 +140,8 @@ function NewAppointmentForm() {
                 onClick={() => set('duration_min', d)}
                 className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors border ${
                   form.duration_min === d
-                    ? 'bg-green-600 text-white border-green-600'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-green-300'
+                    ? 'bg-purple-600 text-white border-purple-600'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'
                 }`}
               >
                 {d}min
@@ -161,8 +161,8 @@ function NewAppointmentForm() {
                 onClick={() => set('type', t)}
                 className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors border ${
                   form.type === t
-                    ? 'bg-green-600 text-white border-green-600'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-green-300'
+                    ? 'bg-purple-600 text-white border-purple-600'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'
                 }`}
               >
                 {t}
@@ -184,8 +184,8 @@ function NewAppointmentForm() {
                 onClick={() => setRecurrence(opt.value)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors border ${
                   recurrence === opt.value
-                    ? 'bg-green-600 text-white border-green-600'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-green-300'
+                    ? 'bg-purple-600 text-white border-purple-600'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'
                 }`}
               >
                 {opt.label}
@@ -195,16 +195,16 @@ function NewAppointmentForm() {
 
           {/* Preview dates */}
           {recurrence > 1 && form.date && (
-            <div className="mt-3 bg-green-50 border border-green-200 rounded-xl p-3">
-              <p className="text-xs font-semibold text-green-700 mb-2 flex items-center gap-1">
+            <div className="mt-3 bg-purple-50 border border-purple-200 rounded-xl p-3">
+              <p className="text-xs font-semibold text-purple-700 mb-2 flex items-center gap-1">
                 <Repeat size={11} /> {recurrence} consultas serão criadas:
               </p>
               <div className="space-y-1">
                 {getPreviewDates().map((date, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-green-600 text-white text-xs flex items-center justify-center font-bold flex-shrink-0">{i + 1}</span>
-                    <span className="text-xs text-green-800">{date} às {form.time}</span>
-                    {selectedPatient && <span className="text-xs text-green-600">· {selectedPatient.name}</span>}
+                    <span className="w-5 h-5 rounded-full bg-purple-600 text-white text-xs flex items-center justify-center font-bold flex-shrink-0">{i + 1}</span>
+                    <span className="text-xs text-purple-800">{date} às {form.time}</span>
+                    {selectedPatient && <span className="text-xs text-purple-600">· {selectedPatient.name}</span>}
                   </div>
                 ))}
               </div>
@@ -225,10 +225,10 @@ function NewAppointmentForm() {
             type="checkbox"
             checked={sendReminder}
             onChange={e => setSendReminder(e.target.checked)}
-            className="w-4 h-4 accent-green-600"
+            className="w-4 h-4 accent-purple-600"
           />
           <label htmlFor="reminder" className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-            <Send size={14} className="text-green-500" />
+            <Send size={14} className="text-purple-500" />
             Enviar lembrete WhatsApp para 1ª consulta
           </label>
         </div>
