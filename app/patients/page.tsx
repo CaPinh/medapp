@@ -1,65 +1,97 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { Search, Plus, User, Phone, ChevronRight } from 'lucide-react'
+import { supabase, type Patient } from '@/lib/supabase'
+import BottomNav from '@/components/BottomNav'
 
-export default function NewPatientPage() {
-  const router = useRouter()
-  const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({
-    name: '', phone: '', email: '', birth_date: '', notes: '',
-  })
+export default function PatientsPage() {
+  const [patients, setPatients] = useState<Patient[]>([])
+  const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
 
-  function set(field: string, value: string) {
-    setForm(f => ({ ...f, [field]: value }))
+  useEffect(() => { fetchPatients() }, [])
+
+  async function fetchPatients() {
+    setLoading(true)
+    const { data } = await supabase
+      .from('patients')
+      .select()
+      .order('name')
+    setPatients(data || [])
+    setLoading(false)
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!form.name || !form.phone) return
-    setSaving(true)
-    const { data, error } = await supabase.from('patients').insert([form]).select().single()
-    setSaving(false)
-    if (!error && data) router.push(`/patients/${data.id}`)
-  }
+  const filtered = patients.filter(p =>
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    p.phone.includes(search)
+  )
 
   return (
-    <div className="page-container pb-8">
-      <div className="bg-purple-600 px-4 pt-12 pb-5 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-white/80 hover:text-white">
-          <ArrowLeft size={22} />
-        </button>
-        <h1 className="text-white text-xl font-bold">Novo Paciente</h1>
+    <div className="page-container pb-24">
+      {/* Header */}
+      <div className="bg-purple-600 px-4 pt-12 pb-5">
+        <h1 className="text-white text-2xl font-bold">Pacientes</h1>
+        <p className="text-purple-100 text-sm mt-0.5">{patients.length} cadastrados</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="px-4 mt-5 space-y-4">
-        <div>
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Nome completo *</label>
-          <input className="input mt-1" value={form.name} onChange={e => set('name', e.target.value)} placeholder="Nome do paciente" required />
+      {/* Search + Add */}
+      <div className="px-4 mt-4 flex gap-2">
+        <div className="flex-1 relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            className="input pl-9"
+            placeholder="Buscar por nome ou telefone..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
         </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Telefone / WhatsApp *</label>
-          <input className="input mt-1" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="(11) 99999-9999" required />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">E-mail</label>
-          <input className="input mt-1" type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="email@exemplo.com" />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Data de nascimento</label>
-          <input className="input mt-1" type="date" value={form.birth_date} onChange={e => set('birth_date', e.target.value)} />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Observações</label>
-          <textarea className="input mt-1 resize-none" rows={3} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Alergias, histórico relevante..." />
-        </div>
+        <Link
+          href="/patients/new"
+          className="bg-purple-600 text-white rounded-xl px-3 flex items-center gap-1 text-sm font-semibold hover:bg-purple-700 transition-colors"
+        >
+          <Plus size={16} />
+        </Link>
+      </div>
 
-        <button type="submit" disabled={saving} className="btn-primary mt-2">
-          {saving ? 'Salvando...' : 'Cadastrar Paciente'}
-        </button>
-      </form>
+      {/* List */}
+      <div className="px-4 mt-4 space-y-2">
+        {loading && [1,2,3,4].map(i => (
+          <div key={i} className="card animate-pulse h-16 bg-gray-100" />
+        ))}
+
+        {!loading && filtered.length === 0 && (
+          <div className="text-center py-12 text-gray-400">
+            <User size={40} className="mx-auto mb-2 opacity-40" />
+            <p className="text-sm">Nenhum paciente encontrado</p>
+            <Link href="/patients/new" className="text-purple-600 text-sm font-medium mt-2 block">
+              + Cadastrar paciente
+            </Link>
+          </div>
+        )}
+
+        {filtered.map(patient => (
+          <Link key={patient.id} href={`/patients/${patient.id}`}>
+            <div className="card flex items-center gap-3 hover:bg-gray-50 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-purple-700 font-bold text-sm">
+                  {patient.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-800 text-sm truncate">{patient.name}</p>
+                <p className="text-gray-500 text-xs flex items-center gap-1 mt-0.5">
+                  <Phone size={11} /> {patient.phone}
+                </p>
+              </div>
+              <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <BottomNav active="patients" />
     </div>
   )
 }
