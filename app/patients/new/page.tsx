@@ -27,7 +27,7 @@ export default function NewPatientPage() {
 
   return (
     <div className="page-container pb-8">
-      <div className="bg-green-600 px-4 pt-12 pb-5 flex items-center gap-3">
+      <div className="bg-purple-600 px-4 pt-12 pb-5 flex items-center gap-3">
         <button onClick={() => router.back()} className="text-white/80 hover:text-white">
           <ArrowLeft size={22} />
         </button>
