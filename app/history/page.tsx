@@ -49,9 +49,9 @@ export default function HistoryPage() {
 
   return (
     <div className="page-container pb-24">
-      <div className="bg-green-600 px-4 pt-12 pb-5">
+      <div className="bg-purple-600 px-4 pt-12 pb-5">
         <h1 className="text-white text-2xl font-bold">Histórico</h1>
-        <p className="text-green-100 text-sm mt-0.5">{appointments.length} consultas</p>
+        <p className="text-purple-100 text-sm mt-0.5">{appointments.length} consultas</p>
       </div>
 
       {/* Filter chips */}
@@ -62,8 +62,8 @@ export default function HistoryPage() {
             onClick={() => setFilter(f.value)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
               filter === f.value
-                ? 'bg-green-600 text-white border-green-600'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-green-300'
+                ? 'bg-purple-600 text-white border-purple-600'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'
             }`}
           >
             {f.label}
