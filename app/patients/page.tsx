@@ -39,9 +39,9 @@ export default function PatientsPage() {
       {/* Search + Add */}
       <div className="px-4 mt-4 flex gap-2">
         <div className="flex-1 relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
-            className="input pl-10"
+            style={{paddingLeft:"2.5rem"}} className="input"
             placeholder="Buscar por nome ou telefone..."
             value={search}
             onChange={e => setSearch(e.target.value)}
