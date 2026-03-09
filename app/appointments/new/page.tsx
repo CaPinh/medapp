@@ -2,12 +2,20 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Send } from 'lucide-react'
-import { format } from 'date-fns'
+import { ArrowLeft, Send, Repeat } from 'lucide-react'
+import { format, addWeeks } from 'date-fns'
 import { supabase, type Patient } from '@/lib/supabase'
 
 const TYPES = ['Consulta', 'Retorno', 'Exame', 'Procedimento', 'Urgência']
-const DURATIONS = [15, 30, 45, 60, 90]
+const DURATIONS = [15, 30, 45, 50, 60, 90]
+const RECURRENCE_OPTIONS = [
+  { value: 1, label: '1x (sem repetição)' },
+  { value: 2, label: '2 semanas seguidas' },
+  { value: 3, label: '3 semanas seguidas' },
+  { value: 4, label: '4 semanas seguidas' },
+  { value: 6, label: '6 semanas seguidas' },
+  { value: 8, label: '8 semanas seguidas' },
+]
 
 function NewAppointmentForm() {
   const router = useRouter()
@@ -15,11 +23,12 @@ function NewAppointmentForm() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [saving, setSaving] = useState(false)
   const [sendReminder, setSendReminder] = useState(true)
+  const [recurrence, setRecurrence] = useState(1)
   const [form, setForm] = useState({
     patient_id: params.get('patient_id') || '',
     date: format(new Date(), 'yyyy-MM-dd'),
     time: '08:00',
-    duration_min: 30,
+    duration_min: 50,
     type: 'Consulta',
     notes: '',
     status: 'scheduled',
@@ -37,28 +46,54 @@ function NewAppointmentForm() {
     setForm(f => ({ ...f, [field]: value }))
   }
 
+  // Preview das datas que serão criadas
+  function getPreviewDates() {
+    const dates = []
+    for (let i = 0; i < recurrence; i++) {
+      const d = addWeeks(new Date(form.date + 'T12:00:00'), i)
+      dates.push(format(d, "dd/MM/yyyy (EEE)", { locale: undefined }))
+    }
+    return dates
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.patient_id || !form.date || !form.time) return
     setSaving(true)
 
-    const { data, error } = await supabase
-      .from('appointments')
-      .insert([form])
-      .select()
-      .single()
+    const insertedIds: string[] = []
 
-    if (!error && data && sendReminder) {
+    // Insert one appointment per week
+    for (let i = 0; i < recurrence; i++) {
+      const apptDate = addWeeks(new Date(form.date + 'T12:00:00'), i)
+      const dateStr = format(apptDate, 'yyyy-MM-dd')
+
+      const { data, error } = await supabase
+        .from('appointments')
+        .insert([{ ...form, date: dateStr }])
+        .select()
+        .single()
+
+      if (!error && data) {
+        insertedIds.push(data.id)
+      }
+    }
+
+    // Send reminder for first appointment only
+    if (sendReminder && insertedIds.length > 0) {
       await fetch('/api/appointments/remind', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appointment_id: data.id }),
+        body: JSON.stringify({ appointment_id: insertedIds[0] }),
       })
     }
 
     setSaving(false)
-    if (!error) router.push('/')
+    router.push('/')
   }
+
+  const previewDates = recurrence > 1 ? getPreviewDates() : []
+  const selectedPatient = patients.find(p => p.id === form.patient_id)
 
   return (
     <div className="page-container pb-8">
@@ -70,6 +105,8 @@ function NewAppointmentForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="px-4 mt-5 space-y-4">
+
+        {/* Patient */}
         <div>
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Paciente *</label>
           <select className="input mt-1" value={form.patient_id} onChange={e => set('patient_id', e.target.value)} required>
@@ -80,6 +117,7 @@ function NewAppointmentForm() {
           </select>
         </div>
 
+        {/* Date + Time */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Data *</label>
@@ -91,6 +129,7 @@ function NewAppointmentForm() {
           </div>
         </div>
 
+        {/* Duration */}
         <div>
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Duração</label>
           <div className="flex gap-2 mt-1 flex-wrap">
@@ -111,6 +150,7 @@ function NewAppointmentForm() {
           </div>
         </div>
 
+        {/* Type */}
         <div>
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipo</label>
           <div className="flex gap-2 mt-1 flex-wrap">
@@ -131,11 +171,54 @@ function NewAppointmentForm() {
           </div>
         </div>
 
+        {/* Recurrence */}
+        <div>
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-1.5">
+            <Repeat size={12} /> Repetição semanal
+          </label>
+          <div className="flex gap-2 mt-1 flex-wrap">
+            {RECURRENCE_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setRecurrence(opt.value)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors border ${
+                  recurrence === opt.value
+                    ? 'bg-green-600 text-white border-green-600'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-green-300'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Preview dates */}
+          {recurrence > 1 && form.date && (
+            <div className="mt-3 bg-green-50 border border-green-200 rounded-xl p-3">
+              <p className="text-xs font-semibold text-green-700 mb-2 flex items-center gap-1">
+                <Repeat size={11} /> {recurrence} consultas serão criadas:
+              </p>
+              <div className="space-y-1">
+                {getPreviewDates().map((date, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-green-600 text-white text-xs flex items-center justify-center font-bold flex-shrink-0">{i + 1}</span>
+                    <span className="text-xs text-green-800">{date} às {form.time}</span>
+                    {selectedPatient && <span className="text-xs text-green-600">· {selectedPatient.name}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Notes */}
         <div>
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Observações</label>
           <textarea className="input mt-1 resize-none" rows={2} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Motivo da consulta, observações..." />
         </div>
 
+        {/* Reminder */}
         <div className="flex items-center gap-3 py-3 border-t border-gray-100">
           <input
             id="reminder"
@@ -146,12 +229,17 @@ function NewAppointmentForm() {
           />
           <label htmlFor="reminder" className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
             <Send size={14} className="text-green-500" />
-            Enviar lembrete via WhatsApp ao paciente
+            Enviar lembrete WhatsApp para 1ª consulta
           </label>
         </div>
 
         <button type="submit" disabled={saving} className="btn-primary">
-          {saving ? 'Agendando...' : 'Confirmar Agendamento'}
+          {saving
+            ? `Agendando ${recurrence} consulta(s)...`
+            : recurrence > 1
+              ? `Agendar ${recurrence} consultas semanais`
+              : 'Confirmar Agendamento'
+          }
         </button>
       </form>
     </div>
