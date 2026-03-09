@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
-import { Calendar, Users, Clock, CheckCircle, XCircle, Bell, ChevronRight, Plus } from 'lucide-react'
+import { Calendar, Clock, CheckCircle, Bell, ChevronRight, Plus } from 'lucide-react'
 import { supabase, type Appointment } from '@/lib/supabase'
 import StatusBadge from '@/components/StatusBadge'
 import BottomNav from '@/components/BottomNav'
@@ -21,13 +21,17 @@ export default function Home() {
 
   async function fetchToday() {
     setLoading(true)
-    const { data } = await supabase
-      .from('appointments')
-      .select('*, patient:patients(*)')
-      .eq('date', today)
-      .neq('status', 'cancelled')
-      .order('time')
-    setAppointments(data || [])
+    try {
+      const { data } = await supabase
+        .from('appointments')
+        .select('*, patient:patients(*)')
+        .eq('date', today)
+        .neq('status', 'cancelled')
+        .order('time')
+      setAppointments(data || [])
+    } catch (e) {
+      console.error(e)
+    }
     setLoading(false)
   }
 
@@ -44,12 +48,9 @@ export default function Home() {
 
   return (
     <div className="page-container pb-24">
-      {/* Header */}
       <div className="bg-green-600 px-4 pt-12 pb-6">
         <p className="text-green-100 text-sm capitalize">{todayLabel}</p>
         <h1 className="text-white text-2xl font-bold mt-1">Agenda de Hoje</h1>
-
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-2 mt-4">
           {[
             { label: 'Total', value: stats.total, icon: Calendar },
@@ -65,18 +66,14 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Quick actions */}
       <div className="px-4 mt-4 flex gap-2">
         <Link href="/appointments/new" className="flex-1 btn-primary flex items-center justify-center gap-2">
           <Plus size={16} /> Nova Consulta
         </Link>
         <button
           onClick={async () => {
-            await fetch('/api/notify', {
-              method: 'POST',
-              headers: { 'x-cron-secret': '' },
-            })
-            alert('Resumo do dia enviado via WhatsApp!')
+            await fetch('/api/notify', { method: 'POST', headers: { 'x-cron-secret': '' } })
+            alert('Resumo enviado via WhatsApp!')
           }}
           className="btn-ghost flex items-center gap-1.5 px-3"
         >
@@ -84,7 +81,6 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Today's appointments */}
       <div className="px-4 mt-5">
         <h2 className="text-gray-800 font-semibold text-base mb-3">Consultas do dia</h2>
 
@@ -109,13 +105,10 @@ export default function Home() {
         <div className="space-y-3">
           {appointments.map(appt => (
             <div key={appt.id} className="card flex items-start gap-3">
-              {/* Time */}
               <div className="text-center min-w-[44px]">
                 <p className="text-green-600 font-bold text-base">{appt.time.slice(0, 5)}</p>
                 <p className="text-gray-400 text-xs">{appt.duration_min}min</p>
               </div>
-
-              {/* Info */}
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-800 text-sm truncate">{appt.patient?.name}</p>
                 <p className="text-gray-500 text-xs">{appt.type}</p>
@@ -123,14 +116,11 @@ export default function Home() {
                   <StatusBadge status={appt.status} />
                 </div>
               </div>
-
-              {/* Actions */}
               <div className="flex flex-col gap-1">
                 {appt.status === 'scheduled' && (
                   <button
                     onClick={() => updateStatus(appt.id, 'confirmed')}
                     className="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100"
-                    title="Confirmar"
                   >
                     <CheckCircle size={16} />
                   </button>
@@ -139,7 +129,6 @@ export default function Home() {
                   <button
                     onClick={() => updateStatus(appt.id, 'completed')}
                     className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100"
-                    title="Concluir"
                   >
                     <CheckCircle size={16} />
                   </button>
