@@ -11,7 +11,7 @@ import StatusBadge from '@/components/StatusBadge'
 
 const STATUS_ACTIONS = [
   { value: 'scheduled',  label: 'Agendado',   icon: Clock,        color: 'text-blue-600 bg-blue-50' },
-  { value: 'confirmed',  label: 'Confirmado',  icon: CheckCircle,  color: 'text-green-600 bg-green-50' },
+  { value: 'confirmed',  label: 'Confirmado',  icon: CheckCircle,  color: 'text-purple-600 bg-purple-50' },
   { value: 'completed',  label: 'Realizado',   icon: CheckCircle,  color: 'text-gray-600 bg-gray-50' },
   { value: 'cancelled',  label: 'Cancelado',   icon: XCircle,      color: 'text-red-600 bg-red-50' },
 ]
@@ -61,7 +61,7 @@ export default function AppointmentDetailPage() {
 
   return (
     <div className="page-container pb-8">
-      <div className="bg-green-600 px-4 pt-12 pb-6">
+      <div className="bg-purple-600 px-4 pt-12 pb-6">
         <div className="flex items-center justify-between">
           <button onClick={() => router.back()} className="text-white/80 hover:text-white">
             <ArrowLeft size={22} />
@@ -71,15 +71,15 @@ export default function AppointmentDetailPage() {
           </button>
         </div>
         <h1 className="text-white text-xl font-bold mt-4 capitalize">{dateLabel}</h1>
-        <p className="text-green-100 text-sm mt-0.5">{appt.time.slice(0, 5)} · {appt.duration_min} min · {appt.type}</p>
+        <p className="text-purple-100 text-sm mt-0.5">{appt.time.slice(0, 5)} · {appt.duration_min} min · {appt.type}</p>
       </div>
 
       <div className="px-4 mt-4 space-y-3">
         {/* Patient card */}
         <Link href={`/patients/${appt.patient_id}`}>
           <div className="card flex items-center gap-3 hover:bg-gray-50">
-            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-              <span className="text-green-700 font-bold text-sm">
+            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+              <span className="text-purple-700 font-bold text-sm">
                 {appt.patient?.name.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
               </span>
             </div>
@@ -125,8 +125,8 @@ export default function AppointmentDetailPage() {
           disabled={sending}
           className="card flex items-center gap-3 w-full text-left hover:bg-gray-50 transition-colors"
         >
-          <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center">
-            <MessageCircle size={18} className="text-green-600" />
+          <div className="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center">
+            <MessageCircle size={18} className="text-purple-600" />
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-800">
