@@ -26,17 +26,17 @@ body {
 
 /* Status badges */
 .badge-scheduled  { @apply bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full; }
-.badge-confirmed  { @apply bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full; }
+.badge-confirmed  { @apply bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded-full; }
 .badge-cancelled  { @apply bg-red-100 text-red-700 text-xs font-semibold px-2 py-0.5 rounded-full; }
 .badge-completed  { @apply bg-gray-100 text-gray-600 text-xs font-semibold px-2 py-0.5 rounded-full; }
 
 /* Input */
 .input {
-  @apply w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50;
+  @apply w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-gray-50;
 }
 
 .btn-primary {
-  @apply bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl px-4 py-2.5 text-sm transition-colors w-full;
+  @apply bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl px-4 py-2.5 text-sm transition-colors w-full;
 }
 
 .btn-ghost {
