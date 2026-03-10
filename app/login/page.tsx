@@ -40,8 +40,8 @@ export default function LoginPage() {
           <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
             <span className="text-4xl">🏥</span>
           </div>
-          <h1 className="text-white text-3xl font-bold">MedApp</h1>
-          <p className="text-white/70 text-sm mt-1">Agenda Médica</p>
+          <h1 className="text-white text-3xl font-bold">FisioRoland</h1>
+          <p className="text-white/70 text-sm mt-1">Fisioterapia</p>
         </div>
 
         <div className="bg-white rounded-3xl p-6 shadow-2xl">
