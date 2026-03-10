@@ -1,4 +1,5 @@
 'use client'
+import { useAuth } from '@/hooks/useAuth'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -8,8 +9,10 @@ import BottomNav from '@/components/BottomNav'
 
 export default function PatientsPage() {
   const [patients, setPatients] = useState<Patient[]>([])
+  useAuth()
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  useAuth()
 
   useEffect(() => { fetchPatients() }, [])
 
