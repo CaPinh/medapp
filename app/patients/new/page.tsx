@@ -20,7 +20,17 @@ export default function NewPatientPage() {
     e.preventDefault()
     if (!form.name || !form.phone) return
     setSaving(true)
-    const { data, error } = await supabase.from('patients').insert([form]).select().single()
+
+    // Convert empty strings to null for optional fields
+    const payload = {
+      name: form.name,
+      phone: form.phone,
+      email: form.email || null,
+      birth_date: form.birth_date || null,
+      notes: form.notes || null,
+    }
+
+    const { data, error } = await supabase.from('patients').insert([payload]).select().single()
     setSaving(false)
     if (!error && data) router.push(`/patients/${data.id}`)
   }
@@ -44,11 +54,11 @@ export default function NewPatientPage() {
           <input className="input mt-1" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="(11) 99999-9999" required />
         </div>
         <div>
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">E-mail</label>
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">E-mail <span className="text-gray-400 normal-case font-normal">(opcional)</span></label>
           <input className="input mt-1" type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="email@exemplo.com" />
         </div>
         <div>
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Data de nascimento</label>
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Data de nascimento <span className="text-gray-400 normal-case font-normal">(opcional)</span></label>
           <input className="input mt-1" type="date" value={form.birth_date} onChange={e => set('birth_date', e.target.value)} />
         </div>
         <div>
