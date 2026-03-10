@@ -1,4 +1,5 @@
 'use client'
+import { useAuth } from '@/hooks/useAuth'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -19,8 +20,10 @@ const FILTERS = [
 
 export default function HistoryPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  useAuth()
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(true)
+  useAuth()
 
   useEffect(() => { fetchAll() }, [filter])
 
