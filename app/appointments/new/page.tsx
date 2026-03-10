@@ -9,12 +9,14 @@ import { supabase, type Patient } from '@/lib/supabase'
 const TYPES = ['Consulta', 'Retorno', 'Exame', 'Procedimento', 'Urgência']
 const DURATIONS = [15, 30, 45, 50, 60, 90]
 const RECURRENCE_OPTIONS = [
-  { value: 1, label: '1x (sem repetição)' },
-  { value: 2, label: '2 semanas seguidas' },
-  { value: 3, label: '3 semanas seguidas' },
-  { value: 4, label: '4 semanas seguidas' },
-  { value: 6, label: '6 semanas seguidas' },
-  { value: 8, label: '8 semanas seguidas' },
+  { value: 1,  label: 'Sem repetição' },
+  { value: 2,  label: '2 semanas' },
+  { value: 3,  label: '3 semanas' },
+  { value: 4,  label: '4 semanas' },
+  { value: 6,  label: '6 semanas' },
+  { value: 8,  label: '8 semanas' },
+  { value: 26, label: '6 meses' },
+  { value: 52, label: '1 ano' },
 ]
 
 function NewAppointmentForm() {
@@ -22,11 +24,12 @@ function NewAppointmentForm() {
   const params = useSearchParams()
   const [patients, setPatients] = useState<Patient[]>([])
   const [saving, setSaving] = useState(false)
+  const [saveProgress, setSaveProgress] = useState(0)
   const [sendReminder, setSendReminder] = useState(true)
   const [recurrence, setRecurrence] = useState(1)
   const [form, setForm] = useState({
     patient_id: params.get('patient_id') || '',
-    date: format(new Date(), 'yyyy-MM-dd'),
+    date: params.get('date') || format(new Date(), 'yyyy-MM-dd'),
     time: '08:00',
     duration_min: 50,
     type: 'Consulta',
@@ -46,12 +49,11 @@ function NewAppointmentForm() {
     setForm(f => ({ ...f, [field]: value }))
   }
 
-  // Preview das datas que serão criadas
   function getPreviewDates() {
     const dates = []
-    for (let i = 0; i < recurrence; i++) {
+    for (let i = 0; i < Math.min(recurrence, 5); i++) {
       const d = addWeeks(new Date(form.date + 'T12:00:00'), i)
-      dates.push(format(d, "dd/MM/yyyy (EEE)", { locale: undefined }))
+      dates.push(format(d, 'dd/MM/yyyy (EEE)'))
     }
     return dates
   }
@@ -60,10 +62,10 @@ function NewAppointmentForm() {
     e.preventDefault()
     if (!form.patient_id || !form.date || !form.time) return
     setSaving(true)
+    setSaveProgress(0)
 
     const insertedIds: string[] = []
 
-    // Insert one appointment per week
     for (let i = 0; i < recurrence; i++) {
       const apptDate = addWeeks(new Date(form.date + 'T12:00:00'), i)
       const dateStr = format(apptDate, 'yyyy-MM-dd')
@@ -74,12 +76,10 @@ function NewAppointmentForm() {
         .select()
         .single()
 
-      if (!error && data) {
-        insertedIds.push(data.id)
-      }
+      if (!error && data) insertedIds.push(data.id)
+      setSaveProgress(Math.round(((i + 1) / recurrence) * 100))
     }
 
-    // Send reminder for first appointment only
     if (sendReminder && insertedIds.length > 0) {
       await fetch('/api/appointments/remind', {
         method: 'POST',
@@ -92,7 +92,6 @@ function NewAppointmentForm() {
     router.push('/')
   }
 
-  const previewDates = recurrence > 1 ? getPreviewDates() : []
   const selectedPatient = patients.find(p => p.id === form.patient_id)
 
   return (
@@ -134,16 +133,12 @@ function NewAppointmentForm() {
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Duração</label>
           <div className="flex gap-2 mt-1 flex-wrap">
             {DURATIONS.map(d => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => set('duration_min', d)}
+              <button key={d} type="button" onClick={() => set('duration_min', d)}
                 className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors border ${
                   form.duration_min === d
                     ? 'bg-purple-600 text-white border-purple-600'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'
-                }`}
-              >
+                }`}>
                 {d}min
               </button>
             ))}
@@ -155,16 +150,12 @@ function NewAppointmentForm() {
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipo</label>
           <div className="flex gap-2 mt-1 flex-wrap">
             {TYPES.map(t => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => set('type', t)}
+              <button key={t} type="button" onClick={() => set('type', t)}
                 className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors border ${
                   form.type === t
                     ? 'bg-purple-600 text-white border-purple-600'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'
-                }`}
-              >
+                }`}>
                 {t}
               </button>
             ))}
@@ -178,35 +169,35 @@ function NewAppointmentForm() {
           </label>
           <div className="flex gap-2 mt-1 flex-wrap">
             {RECURRENCE_OPTIONS.map(opt => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setRecurrence(opt.value)}
+              <button key={opt.value} type="button" onClick={() => setRecurrence(opt.value)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors border ${
                   recurrence === opt.value
                     ? 'bg-purple-600 text-white border-purple-600'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'
-                }`}
-              >
+                }`}>
                 {opt.label}
               </button>
             ))}
           </div>
 
-          {/* Preview dates */}
+          {/* Preview */}
           {recurrence > 1 && form.date && (
             <div className="mt-3 bg-purple-50 border border-purple-200 rounded-xl p-3">
               <p className="text-xs font-semibold text-purple-700 mb-2 flex items-center gap-1">
-                <Repeat size={11} /> {recurrence} consultas serão criadas:
+                <Repeat size={11} />
+                {recurrence} consultas · primeiras 5 datas:
               </p>
               <div className="space-y-1">
                 {getPreviewDates().map((date, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-purple-600 text-white text-xs flex items-center justify-center font-bold flex-shrink-0">{i + 1}</span>
                     <span className="text-xs text-purple-800">{date} às {form.time}</span>
-                    {selectedPatient && <span className="text-xs text-purple-600">· {selectedPatient.name}</span>}
+                    {selectedPatient && <span className="text-xs text-purple-500">· {selectedPatient.name}</span>}
                   </div>
                 ))}
+                {recurrence > 5 && (
+                  <p className="text-xs text-purple-500 pl-7">+ {recurrence - 5} consultas...</p>
+                )}
               </div>
             </div>
           )}
@@ -220,22 +211,28 @@ function NewAppointmentForm() {
 
         {/* Reminder */}
         <div className="flex items-center gap-3 py-3 border-t border-gray-100">
-          <input
-            id="reminder"
-            type="checkbox"
-            checked={sendReminder}
-            onChange={e => setSendReminder(e.target.checked)}
-            className="w-4 h-4 accent-purple-600"
-          />
+          <input id="reminder" type="checkbox" checked={sendReminder}
+            onChange={e => setSendReminder(e.target.checked)} className="w-4 h-4 accent-purple-600" />
           <label htmlFor="reminder" className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
             <Send size={14} className="text-purple-500" />
             Enviar lembrete WhatsApp para 1ª consulta
           </label>
         </div>
 
+        {/* Progress bar while saving many appointments */}
+        {saving && recurrence > 4 && (
+          <div className="w-full bg-gray-100 rounded-full h-2">
+            <div
+              className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${saveProgress}%` }}
+            />
+            <p className="text-xs text-gray-500 mt-1 text-center">{saveProgress}% — criando consultas...</p>
+          </div>
+        )}
+
         <button type="submit" disabled={saving} className="btn-primary">
           {saving
-            ? `Agendando ${recurrence} consulta(s)...`
+            ? `Agendando... ${recurrence > 4 ? `(${saveProgress}%)` : ''}`
             : recurrence > 1
               ? `Agendar ${recurrence} consultas semanais`
               : 'Confirmar Agendamento'
