@@ -1,4 +1,5 @@
 'use client'
+import { useAuth } from '@/hooks/useAuth'
 
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
@@ -11,6 +12,7 @@ import BottomNav from '@/components/BottomNav'
 
 export default function Home() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  useAuth()
   const [loading, setLoading] = useState(true)
   const today = format(new Date(), 'yyyy-MM-dd')
   const todayLabel = format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })
