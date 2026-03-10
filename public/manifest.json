@@ -1,6 +1,6 @@
 {
-  "name": "MedApp — Agenda Médica",
-  "short_name": "MedApp",
+  "name": "FisioRoland — Fisioterapia",
+  "short_name": "FisioRoland",
   "description": "Agendamento de consultas médicas",
   "start_url": "/",
   "display": "standalone",
