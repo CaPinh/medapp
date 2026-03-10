@@ -1,25 +1,19 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const ALLOWED_EMAIL = process.env.ALLOWED_EMAIL || ''
-
-type CookieToSet = { name: string; value: string; options?: Record<string, unknown> }
-
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
+  const response = NextResponse.next()
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() { return request.cookies.getAll() },
-        setAll(cookiesToSet: CookieToSet[]) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options as Parameters<typeof supabaseResponse.cookies.set>[2])
-          )
+        getAll: () => request.cookies.getAll(),
+        setAll: (toSet: Array<{ name: string; value: string; options?: object }>) => {
+          toSet.forEach(({ name, value, options }) => {
+            response.cookies.set({ name, value, ...(options ?? {}) })
+          })
         },
       },
     }
@@ -27,24 +21,18 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isLoginPage = request.nextUrl.pathname === '/login'
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth')
-  const isPublicRoute = isLoginPage || isAuthRoute
+  const path = request.nextUrl.pathname
+  const isPublic = path === '/login' || path.startsWith('/auth')
 
-  if (!user && !isPublicRoute) {
+  if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && ALLOWED_EMAIL && user.email !== ALLOWED_EMAIL && !isPublicRoute) {
-    await supabase.auth.signOut()
-    return NextResponse.redirect(new URL('/login?error=unauthorized', request.url))
-  }
-
-  if (user && isLoginPage) {
+  if (user && path === '/login') {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  return supabaseResponse
+  return response
 }
 
 export const config = {
