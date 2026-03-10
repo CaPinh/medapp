@@ -41,7 +41,7 @@ export default function LoginPage() {
             <span className="text-4xl">🏥</span>
           </div>
           <h1 className="text-white text-3xl font-bold">FisioRoland</h1>
-          <p className="text-white/70 text-sm mt-1">Fisioterapia</p>
+          <p className="text-white/70 text-sm mt-1">Carolina Roland</p>
         </div>
 
         <div className="bg-white rounded-3xl p-6 shadow-2xl">
