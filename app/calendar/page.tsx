@@ -1,4 +1,5 @@
 'use client'
+import { useAuth } from '@/hooks/useAuth'
 
 import { useEffect, useState } from 'react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, getDay } from 'date-fns'
@@ -11,8 +12,10 @@ import BottomNav from '@/components/BottomNav'
 
 export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  useAuth()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [selectedDay, setSelectedDay] = useState<Date>(new Date())
+  useAuth()
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
