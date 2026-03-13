@@ -38,7 +38,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-            <span className="text-4xl">🏥</span>
+            <span className="text-4xl">🪷</span>
           </div>
           <h1 className="text-white text-3xl font-bold">FisioRoland</h1>
           <p className="text-white/70 text-sm mt-1">Carolina Roland</p>
