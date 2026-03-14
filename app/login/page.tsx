@@ -61,8 +61,7 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-white text-3xl font-bold">FisioRoland</h1>
-          <p className="text-white/70 text-sm mt-1">Fisioterapia</p>
-          <p className="text-white/45 text-xs">Carolina Roland</p>
+          <p className="text-white/70 text-sm mt-1">Carolina Roland</p>
         </div>
 
         <div className="bg-white rounded-3xl p-6 shadow-2xl">
