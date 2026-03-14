@@ -38,31 +38,32 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-            <svg width="56" height="56" viewBox="0 0 120 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Center petal - tall upright */}
-              <path d="M60 8 C60 8 44 28 44 50 C44 62 51 70 60 72 C69 70 76 62 76 50 C76 28 60 8 60 8Z"
-                fill="none" stroke="#C9A96E" strokeWidth="3.5" strokeLinejoin="round"/>
+                        <svg width="58" height="52" viewBox="0 0 120 108" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#8B7320"/>
+                  <stop offset="50%" stopColor="#D4AF37"/>
+                  <stop offset="100%" stopColor="#F0D060"/>
+                </linearGradient>
+              </defs>
+              {/* Center petal - tall */}
+              <path d="M60 4 C60 4 42 24 42 48 C42 62 50 72 60 74 C70 72 78 62 78 48 C78 24 60 4 60 4Z"
+                fill="none" stroke="url(#goldGrad)" strokeWidth="3.2" strokeLinejoin="round"/>
               {/* Left petal */}
-              <path d="M44 68 C44 68 22 58 16 40 C12 28 16 18 24 14 C32 10 42 18 46 34 C50 46 50 58 44 68Z"
-                fill="none" stroke="#C9A96E" strokeWidth="3.5" strokeLinejoin="round"/>
+              <path d="M42 66 C42 66 18 58 10 40 C6 28 10 16 20 12 C30 8 42 18 46 34 C50 48 48 58 42 66Z"
+                fill="none" stroke="url(#goldGrad)" strokeWidth="3.2" strokeLinejoin="round"/>
               {/* Right petal */}
-              <path d="M76 68 C76 68 98 58 104 40 C108 28 104 18 96 14 C88 10 78 18 74 34 C70 46 70 58 76 68Z"
-                fill="none" stroke="#C9A96E" strokeWidth="3.5" strokeLinejoin="round"/>
-              {/* Inner left line detail */}
-              <path d="M44 68 C48 58 54 50 60 72"
-                fill="none" stroke="#C9A96E" strokeWidth="2.5" strokeLinejoin="round" opacity="0.8"/>
-              {/* Inner right line detail */}
-              <path d="M76 68 C72 58 66 50 60 72"
-                fill="none" stroke="#C9A96E" strokeWidth="2.5" strokeLinejoin="round" opacity="0.8"/>
-              {/* Left leaf */}
-              <path d="M30 85 C30 85 10 80 8 66 C16 63 30 70 36 80Z"
-                fill="none" stroke="#C9A96E" strokeWidth="3" strokeLinejoin="round"/>
-              {/* Right leaf */}
-              <path d="M90 85 C90 85 110 80 112 66 C104 63 90 70 84 80Z"
-                fill="none" stroke="#C9A96E" strokeWidth="3" strokeLinejoin="round"/>
-              {/* Base connector */}
-              <path d="M36 82 C44 86 52 88 60 88 C68 88 76 86 84 82"
-                fill="none" stroke="#C9A96E" strokeWidth="3" strokeLinecap="round"/>
+              <path d="M78 66 C78 66 102 58 110 40 C114 28 110 16 100 12 C90 8 78 18 74 34 C70 48 72 58 78 66Z"
+                fill="none" stroke="url(#goldGrad)" strokeWidth="3.2" strokeLinejoin="round"/>
+              {/* Far left petal */}
+              <path d="M42 66 C42 66 22 72 8 64 C2 56 4 44 12 38 C20 32 32 38 38 50 C42 58 42 64 42 66Z"
+                fill="none" stroke="url(#goldGrad)" strokeWidth="3.2" strokeLinejoin="round"/>
+              {/* Far right petal */}
+              <path d="M78 66 C78 66 98 72 112 64 C118 56 116 44 108 38 C100 32 88 38 82 50 C78 58 78 64 78 66Z"
+                fill="none" stroke="url(#goldGrad)" strokeWidth="3.2" strokeLinejoin="round"/>
+              {/* Base line */}
+              <path d="M8 66 C28 80 92 80 112 66"
+                fill="none" stroke="url(#goldGrad)" strokeWidth="3.2" strokeLinecap="round"/>
             </svg>
           </div>
           <h1 className="text-white text-3xl font-bold">FisioRoland</h1>
