@@ -38,7 +38,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-                                    <svg width="58" height="52" viewBox="0 0 300 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <svg width="72" height="65" viewBox="0 0 300 260" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <linearGradient id="goldGrad" x1="20%" y1="0%" x2="80%" y2="100%">
                   <stop offset="0%" stopColor="#8B7320"/>
@@ -62,7 +62,7 @@ export default function LoginPage() {
           </div>
           <h1 className="text-white text-3xl font-bold">FisioRoland</h1>
           <p className="text-white/70 text-sm mt-1">Fisioterapia</p>
-          <p className="text-white/60 text-xs">Carolina Roland</p>
+          <p className="text-white/45 text-xs">Carolina Roland</p>
         </div>
 
         <div className="bg-white rounded-3xl p-6 shadow-2xl">
