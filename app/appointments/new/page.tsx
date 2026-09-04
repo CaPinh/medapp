@@ -27,6 +27,8 @@ function NewAppointmentForm() {
   const [sendReminder, setSendReminder] = useState(true)
   const [recurrence, setRecurrence] = useState(1)
   const [startSession, setStartSession] = useState(1)
+  const [conflictError, setConflictError] = useState<string | null>(null)
+  const [checkingConflicts, setCheckingConflicts] = useState(false)
   const [form, setForm] = useState({
     patient_id: params.get('patient_id') || '',
     date: params.get('date') || format(new Date(), 'yyyy-MM-dd'),
@@ -78,6 +80,9 @@ function NewAppointmentForm() {
 
   function set(field: string, value: string | number) {
     setForm(f => ({ ...f, [field]: value }))
+    if (field === 'date' || field === 'time' || field === 'duration_min') {
+      setConflictError(null)
+    }
   }
 
   function getPreviewDates() {
@@ -89,9 +94,71 @@ function NewAppointmentForm() {
     return dates
   }
 
+  // Verifica se alguma das datas propostas colide com uma consulta já existente
+  async function findConflicts(
+    dates: { dateStr: string; startMin: number; endMin: number }[]
+  ) {
+    const conflicts: string[] = []
+
+    for (const { dateStr, startMin, endMin } of dates) {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('time, duration_min')
+        .eq('date', dateStr)
+        .neq('status', 'cancelled')
+
+      if (error) throw error
+
+      const hasOverlap = (data || []).some(a => {
+        const [h, m] = a.time.split(':').map(Number)
+        const aStart = h * 60 + m
+        const aEnd = aStart + (a.duration_min || 0)
+        return startMin < aEnd && endMin > aStart
+      })
+
+      if (hasOverlap) conflicts.push(dateStr)
+    }
+
+    return conflicts
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.patient_id || !form.date || !form.time) return
+    setConflictError(null)
+
+    const [h, m] = form.time.split(':').map(Number)
+    const startMin = h * 60 + m
+    const endMin = startMin + form.duration_min
+
+    const proposedDates = Array.from({ length: recurrence }, (_, i) => {
+      const d = addWeeks(new Date(form.date + 'T12:00:00'), i)
+      return { dateStr: format(d, 'yyyy-MM-dd'), startMin, endMin }
+    })
+
+    setCheckingConflicts(true)
+    let conflicts: string[] = []
+    try {
+      conflicts = await findConflicts(proposedDates)
+    } catch (err) {
+      setCheckingConflicts(false)
+      setConflictError('Não foi possível verificar conflitos de horário. Tente novamente.')
+      return
+    }
+    setCheckingConflicts(false)
+
+    if (conflicts.length > 0) {
+      const formatted = conflicts
+        .map(d => format(new Date(d + 'T12:00:00'), 'dd/MM'))
+        .join(', ')
+      setConflictError(
+        conflicts.length === 1
+          ? `Já existe uma consulta nesse horário em ${formatted}.`
+          : `Já existem consultas nesse horário em: ${formatted}.`
+      )
+      return
+    }
+
     setSaving(true)
     setSaveProgress(0)
 
@@ -108,7 +175,16 @@ function NewAppointmentForm() {
         .select()
         .single()
 
-      if (!error && data) insertedIds.push(data.id)
+      if (error) {
+        // A constraint do banco pode rejeitar por conflito de última hora
+        // (ex: outra aba criou uma consulta no mesmo instante)
+        setConflictError(
+          `Não foi possível criar a Sessão ${startSession + i} (${format(apptDate, 'dd/MM')}) — horário já ocupado. As sessões anteriores foram salvas normalmente.`
+        )
+        break
+      }
+
+      if (data) insertedIds.push(data.id)
       setSaveProgress(Math.round(((i + 1) / recurrence) * 100))
     }
 
@@ -121,7 +197,11 @@ function NewAppointmentForm() {
     }
 
     setSaving(false)
-    router.push('/')
+
+    // Só redireciona se nenhuma sessão falhou por conflito
+    if (insertedIds.length === recurrence) {
+      router.push('/')
+    }
   }
 
   const selectedPatient = patients.find(p => p.id === form.patient_id)
@@ -216,7 +296,7 @@ function NewAppointmentForm() {
           </label>
           <div className="flex gap-2 mt-1 flex-wrap">
             {RECURRENCE_OPTIONS.map(opt => (
-              <button key={opt.value} type="button" onClick={() => setRecurrence(opt.value)}
+              <button key={opt.value} type="button" onClick={() => { setRecurrence(opt.value); setConflictError(null) }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors border ${
                   recurrence === opt.value
                     ? 'bg-purple-600 text-white border-purple-600'
@@ -268,6 +348,12 @@ function NewAppointmentForm() {
           </label>
         </div>
 
+        {conflictError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl p-3">
+            {conflictError}
+          </div>
+        )}
+
         {saving && recurrence > 4 && (
           <div className="w-full bg-gray-100 rounded-full h-2">
             <div className="bg-purple-600 h-2 rounded-full transition-all duration-300"
@@ -276,12 +362,14 @@ function NewAppointmentForm() {
           </div>
         )}
 
-        <button type="submit" disabled={saving} className="btn-primary">
-          {saving
-            ? `Agendando... ${recurrence > 4 ? `(${saveProgress}%)` : ''}`
-            : recurrence > 1
-              ? `Agendar ${recurrence} sessões (${startSession} a ${startSession + recurrence - 1})`
-              : `Confirmar Sessão ${startSession}`
+        <button type="submit" disabled={saving || checkingConflicts} className="btn-primary">
+          {checkingConflicts
+            ? 'Verificando horário...'
+            : saving
+              ? `Agendando... ${recurrence > 4 ? `(${saveProgress}%)` : ''}`
+              : recurrence > 1
+                ? `Agendar ${recurrence} sessões (${startSession} a ${startSession + recurrence - 1})`
+                : `Confirmar Sessão ${startSession}`
           }
         </button>
       </form>
